@@ -20,6 +20,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+      - name: deps
+        run: sudo apt-get update -q && sudo apt-get install -y -q libopenblas-dev
       - name: build
         run: make
       - name: smoke test (fixture-gated half skips without the 3.7 GB model)
