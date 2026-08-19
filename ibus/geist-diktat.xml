@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+    <name>org.freedesktop.IBus.GeistDiktat</name>
+    <description>geist dictation engine</description>
+    <exec>/usr/libexec/ibus-engine-geist-diktat --ibus</exec>
+    <version>0.1.0</version>
+    <author>geisten.net</author>
+    <license>Apache-2.0</license>
+    <homepage>https://github.com/geisten/geist-diktat</homepage>
+    <textdomain>geist-diktat</textdomain>
+    <engines>
+        <engine>
+            <name>geist-diktat</name>
+            <language>de</language>
+            <license>Apache-2.0</license>
+            <author>geisten.net</author>
+            <icon>audio-input-microphone</icon>
+            <layout>default</layout>
+            <longname>geist-diktat (Diktat)</longname>
+            <description>local speech-to-text into the focused app</description>
+            <rank>0</rank>
+        </engine>
+    </engines>
+</component>

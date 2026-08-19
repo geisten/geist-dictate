@@ -23,12 +23,24 @@ CFLAGS  := -std=c23 -O2 -Wall -Wextra -I$(GEISTLIB)/include $(CFLAGS_TARGET) $(G
 LDFLAGS := $(LDFLAGS_TARGET)
 LDLIBS  := $(LDLIBS_TARGET) $(GEMM_LDLIBS)
 
-.PHONY: all setup test clean
+.PHONY: all setup test ibus clean
 
 all: diktat
 
 diktat: src/diktat.c $(LIB)
 	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LDLIBS)
+
+# IBus engine + headless test client (Linux with libibus-1.0-dev only).
+IBUS_CFLAGS := $(shell pkg-config --cflags ibus-1.0 2>/dev/null)
+IBUS_LIBS   := $(shell pkg-config --libs ibus-1.0 2>/dev/null)
+
+ibus: ibus-engine-geist-diktat ibus-test-client
+
+ibus-engine-geist-diktat: ibus/engine.c
+	$(CC) -std=c23 -O2 -Wall -Wextra $(IBUS_CFLAGS) -o $@ $< $(IBUS_LIBS)
+
+ibus-test-client: ibus/test_client.c
+	$(CC) -std=c23 -O2 -Wall -Wextra $(IBUS_CFLAGS) -o $@ $< $(IBUS_LIBS)
 
 $(LIB):
 	$(MAKE) -C $(GEISTLIB) lib TARGET=$(TARGET) MODE=$(MODE)

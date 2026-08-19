@@ -38,6 +38,17 @@ jobs:
       - name: headless plugin test (diktat stubbed)
         run: sh tests/nvim_smoke.sh
 
+  ibus-engine:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: deps
+        run: sudo apt-get update -q && sudo apt-get install -y -q gcc-14 libibus-1.0-dev ibus dbus
+      - name: build engine + test client
+        run: make CC=gcc-14 ibus
+      - name: headless integration test (daemon + engine + client)
+        run: sh tests/ibus_smoke.sh
+
   deb:
     strategy:
       matrix:
@@ -48,9 +59,9 @@ jobs:
         with:
           submodules: true
       - name: deps
-        run: sudo apt-get update -q && sudo apt-get install -y -q gcc-14 lintian
+        run: sudo apt-get update -q && sudo apt-get install -y -q gcc-14 lintian libibus-1.0-dev
       - name: build (GEMM native — the .deb carries no BLAS dependency)
-        run: make CC=gcc-14 TARGET=linux GEMM_PROVIDER=native
+        run: make CC=gcc-14 TARGET=linux GEMM_PROVIDER=native && make CC=gcc-14 ibus-engine-geist-diktat
       - name: package
         run: sh packaging/build-deb.sh
       - name: lintian (errors fail; style warnings tolerated)

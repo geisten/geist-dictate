@@ -26,6 +26,12 @@ mkdir -p \
 
 install -m755 diktat "$STAGE/usr/bin/diktat"
 strip "$STAGE/usr/bin/diktat"
+# IBus engine (built via `make ibus`; required for the .deb).
+test -x ./ibus-engine-geist-diktat || { echo "build the ibus engine first (make ibus)" >&2; exit 1; }
+mkdir -p "$STAGE/usr/libexec" "$STAGE/usr/share/ibus/component"
+install -m755 ibus-engine-geist-diktat "$STAGE/usr/libexec/"
+strip "$STAGE/usr/libexec/ibus-engine-geist-diktat"
+install -m644 ibus/geist-diktat.xml "$STAGE/usr/share/ibus/component/"
 install -m755 packaging/geist-diktat "$STAGE/usr/bin/geist-diktat"
 install -m644 packaging/geist-diktat.service "$STAGE/usr/lib/systemd/user/"
 install -m644 packaging/70-geist-diktat-uinput.rules "$STAGE/usr/lib/udev/rules.d/"
@@ -67,8 +73,8 @@ Version: $VERSION
 Architecture: $ARCH
 Maintainer: germar <g.schlegel@geisten.net>
 Installed-Size: $INSTALLED_SIZE
-Depends: libc6, libgomp1, alsa-utils, ydotool, curl, python3
-Recommends: libnotify-bin
+Depends: libc6, libgomp1, alsa-utils, ydotool, curl, python3, libibus-1.0-5
+Recommends: libnotify-bin, ibus
 Section: sound
 Priority: optional
 Homepage: https://github.com/geisten/geist-diktat
@@ -86,8 +92,10 @@ set -e
 if [ "$1" = configure ]; then
     udevadm control --reload-rules 2>/dev/null || true
     udevadm trigger /dev/uinput 2>/dev/null || true
-    echo "geist-diktat: per user, run 'geist-diktat setup' (downloads ~3.7 GB),"
-    echo "and add yourself to the 'input' group for typing: sudo usermod -aG input \$USER"
+    echo "geist-diktat: per user, run 'geist-diktat setup' (downloads ~3.7 GB)."
+    echo "Recommended input path: run 'ibus restart', then add the input source"
+    echo "'geist-diktat (Diktat)' under Settings -> Keyboard (listed under German)."
+    echo "Fallback typing path (ydotool): sudo usermod -aG input \$USER"
 fi
 EOF
 chmod 755 "$STAGE/DEBIAN/postinst"

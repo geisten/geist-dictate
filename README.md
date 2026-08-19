@@ -23,9 +23,18 @@ geist-diktat setup                # per-user model download (~3.7 GB, SHA-pinned
 sudo usermod -aG input $USER       # once, for ydotool typing; then re-login
 ```
 
-Bind `geist-diktat toggle` to a keyboard shortcut (GNOME Settings →
-Keyboard → Custom Shortcuts) — press it, speak, press it again. The
-transcript is typed into whatever window has focus.
+Two ways to dictate, pick one:
+
+**IBus input source (recommended — no root, works in every IBus-aware
+app):** run `ibus restart`, add the input source *geist-diktat (Diktat)*
+(GNOME Settings → Keyboard → Input Sources, listed under German), then
+switch to it with `Super+Space`. Selecting the source starts the mic;
+switching away stops it. Committed text arrives through the standard
+input-method protocol.
+
+**Hotkey + ydotool (fallback):** bind `geist-diktat toggle` to a custom
+shortcut — press it, speak, press it again. Needs the `input` group
+membership from above.
 
 ## Build from source
 
