@@ -29,6 +29,15 @@ jobs:
       - name: smoke test (fixture-gated half skips without the 3.7 GB model)
         run: make CC=gcc-14 TARGET=linux test
 
+  nvim-plugin:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: deps
+        run: sudo apt-get update -q && sudo apt-get install -y -q neovim
+      - name: headless plugin test (dictate stubbed)
+        run: sh tests/nvim_smoke.sh
+
   deb:
     strategy:
       matrix:
