@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: deps
         run: sudo apt-get update -q && sudo apt-get install -y -q neovim
-      - name: headless plugin test (dictate stubbed)
+      - name: headless plugin test (diktat stubbed)
         run: sh tests/nvim_smoke.sh
 
   deb:
@@ -54,13 +54,13 @@ jobs:
       - name: package
         run: sh packaging/build-deb.sh
       - name: lintian (errors fail; style warnings tolerated)
-        run: lintian --fail-on error geist-dictate_*.deb
+        run: lintian --fail-on error geist-diktat_*.deb
       - name: install sanity
         run: |
-          sudo apt-get install -y -q ./geist-dictate_*.deb
-          geist-dictate 2>&1 | grep -q usage
-          dictate /nonexistent.gguf </dev/null 2>&1 | grep -q "model_load failed"
+          sudo apt-get install -y -q ./geist-diktat_*.deb
+          geist-diktat 2>&1 | grep -q usage
+          diktat /nonexistent.gguf </dev/null 2>&1 | grep -q "model_load failed"
       - uses: actions/upload-artifact@v4
         with:
-          name: geist-dictate-deb-${{ matrix.runner }}
-          path: geist-dictate_*.deb
+          name: geist-diktat-deb-${{ matrix.runner }}
+          path: geist-diktat_*.deb

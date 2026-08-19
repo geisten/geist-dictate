@@ -1,10 +1,10 @@
-# geist-dictate — system-wide local dictation on the geist engine.
+# geist-diktat — system-wide local dictation on the geist engine.
 #
 # geistlib is a pinned submodule; this Makefile mirrors geistlib's own
-# examples/Makefile so dictate links with exactly the flags the engine
+# examples/Makefile so diktat links with exactly the flags the engine
 # was built with — no duplicated platform knowledge.
 #
-#   make            # build ./dictate (builds the pinned libgeist.a on demand)
+#   make            # build ./diktat (builds the pinned libgeist.a on demand)
 #   make setup      # fetch model (~3.1 GB) + audio tower (~590 MB), SHA-pinned
 #   make test       # smoke test (full transcript check when fixtures exist)
 
@@ -25,9 +25,9 @@ LDLIBS  := $(LDLIBS_TARGET) $(GEMM_LDLIBS)
 
 .PHONY: all setup test clean
 
-all: dictate
+all: diktat
 
-dictate: src/dictate.c $(LIB)
+diktat: src/diktat.c $(LIB)
 	$(CC) $(CFLAGS) -o $@ $< $(LIB) $(LDFLAGS) $(LDLIBS)
 
 $(LIB):
@@ -39,8 +39,8 @@ $(LIB):
 setup:
 	$(MAKE) -C $(GEISTLIB) fetch-model fetch-audio-tower
 
-test: dictate
+test: diktat
 	sh tests/smoke.sh
 
 clean:
-	rm -f dictate
+	rm -f diktat

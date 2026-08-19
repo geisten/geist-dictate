@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=geist-dictate
+Name=geist-diktat
 Comment=Toggle local dictation into the focused window
-Exec=geist-dictate toggle
+Exec=geist-diktat toggle
 Icon=audio-input-microphone
 Terminal=false
 Categories=Utility;Accessibility;

@@ -1,5 +1,5 @@
 /*
- * dictate — system-wide dictation core over the public geist API.
+ * diktat — system-wide dictation core over the public geist API.
  *
  * Reads raw 16 kHz mono s16le PCM from stdin, segments utterances with
  * the same energy VAD as push_to_talk, transcribes each one through the
@@ -8,13 +8,13 @@
  * stage — the OS integration stays out of tree:
  *
  *   # Wayland: type into the focused window
- *   arecord -f S16_LE -r 16000 -c 1 -t raw | ./dictate model.gguf | wtype -
+ *   arecord -f S16_LE -r 16000 -c 1 -t raw | ./diktat model.gguf | wtype -
  *   # X11
- *   arecord ... | ./dictate model.gguf | xargs -d'\n' -I{} xdotool type --clearmodifiers {}
+ *   arecord ... | ./diktat model.gguf | xargs -d'\n' -I{} xdotool type --clearmodifiers {}
  *   # macOS test run
- *   ffmpeg -f avfoundation -i ":1" -ar 16000 -ac 1 -f s16le - | ./dictate model.gguf 1200
+ *   ffmpeg -f avfoundation -i ":1" -ar 16000 -ac 1 -f s16le - | ./diktat model.gguf 1200
  *
- * GEIST_DICTATE_PROMPT overrides the instruction (default:
+ * GEIST_DIKTAT_PROMPT overrides the instruction (default:
  * "Transcribe this audio." — the best-measured phrasing, 4.2 % WER on
  * the LibriSpeech harness set; see docs/VOICE.md). Decode carries the
  * #267 anti-loop guard, and a reply that opens a thought channel is
@@ -87,7 +87,7 @@ static void transcribe_utterance(struct geist_session *sess,
     char suffix[PROMPT_CAP];
     snprintf(suffix, sizeof suffix, "<audio|>\n%s<turn|>\n<|turn>model\n", instr);
     if (!feed_text(sess, suffix, true)) {
-        fprintf(stderr, "dictate: audio turn failed: %s\n", geist_session_errmsg(sess));
+        fprintf(stderr, "diktat: audio turn failed: %s\n", geist_session_errmsg(sess));
         return;
     }
 
@@ -104,7 +104,7 @@ static void transcribe_utterance(struct geist_session *sess,
         /* A thought-channel reply is meta text, not dictation — drop the
          * whole utterance rather than typing it. */
         if (i == 0 && channel_tok >= 0 && tok == channel_tok) {
-            fprintf(stderr, "dictate: model produced meta output, utterance dropped\n");
+            fprintf(stderr, "diktat: model produced meta output, utterance dropped\n");
             return;
         }
         /* #267 anti-loop: stop once the last 8 tokens are a period-1/2
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
         return 2;
     }
     const double rms_thr = argc > 2 ? atof(argv[2]) : 300.0;
-    const char  *instr   = getenv("GEIST_DICTATE_PROMPT");
+    const char  *instr   = getenv("GEIST_DIKTAT_PROMPT");
     if (instr == nullptr)
         instr = "Transcribe this audio.";
 
@@ -188,7 +188,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    fprintf(stderr, "dictate: listening (VAD threshold %.0f RMS, Ctrl-C to quit)...\n", rms_thr);
+    fprintf(stderr, "diktat: listening (VAD threshold %.0f RMS, Ctrl-C to quit)...\n", rms_thr);
 
     /* Same streaming VAD loop as push_to_talk: push PCM while the user
      * speaks, poll injects ready soft tokens, end() pays only the tail. */
@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
                 continue;
             }
             if (speech_len >= MIN_UTT) {
-                fprintf(stderr, "dictate: [%.1f s]\n", (double) pushed / SR);
+                fprintf(stderr, "diktat: [%.1f s]\n", (double) pushed / SR);
                 transcribe_utterance(sess, eos, end_of_turn, channel_tok, instr);
             } else {
                 geist_session_reset(sess);

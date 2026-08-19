@@ -1,17 +1,17 @@
--- :checkhealth geist-dictate
+-- :checkhealth geist-diktat
 local M = {}
 
 function M.check()
     local health = vim.health
-    health.start("geist-dictate")
+    health.start("geist-diktat")
 
-    local dictate = require("geist-dictate")
+    local diktat = require("geist-diktat")
     -- Reach into the configured values via a throwaway pipeline string.
-    local binary = vim.fn.exepath("dictate")
+    local binary = vim.fn.exepath("diktat")
     if binary ~= "" then
-        health.ok("dictate binary: " .. binary)
+        health.ok("diktat binary: " .. binary)
     else
-        health.warn("dictate not on PATH — set setup({ binary = ... }) or install the .deb")
+        health.warn("diktat not on PATH — set setup({ binary = ... }) or install the .deb")
     end
 
     if vim.fn.executable("arecord") == 1 then
@@ -21,14 +21,14 @@ function M.check()
     end
 
     local model = (os.getenv("XDG_DATA_HOME") or (os.getenv("HOME") .. "/.local/share"))
-        .. "/geist-dictate/gemma4-e2b-Q4_K_M.gguf"
+        .. "/geist-diktat/gemma4-e2b-Q4_K_M.gguf"
     if vim.fn.filereadable(model) == 1 then
         health.ok("model: " .. model)
     else
-        health.warn("model missing — run: geist-dictate setup (or set setup({ model = ... }))")
+        health.warn("model missing — run: geist-diktat setup (or set setup({ model = ... }))")
     end
 
-    if dictate.is_active() then
+    if diktat.is_active() then
         health.info("currently listening")
     end
 end

@@ -1,18 +1,18 @@
 #!/bin/sh
-# build-deb.sh — stage and build the geist-dictate .deb with dpkg-deb.
+# build-deb.sh — stage and build the geist-diktat .deb with dpkg-deb.
 # No debhelper: the layout is small enough to own directly (and the
 # engine build already happened via the repo Makefile).
 #
 #   make CC=gcc-14 TARGET=linux GEMM_PROVIDER=native
-#   sh packaging/build-deb.sh            # -> geist-dictate_<v>_<arch>.deb
+#   sh packaging/build-deb.sh            # -> geist-diktat_<v>_<arch>.deb
 set -e
 cd "$(dirname "$0")/.."
 
 VERSION="${VERSION:-0.1.0}"
 ARCH="$(dpkg --print-architecture)"
-STAGE="build/geist-dictate_${VERSION}_${ARCH}"
+STAGE="build/geist-diktat_${VERSION}_${ARCH}"
 
-test -x ./dictate || { echo "build ./dictate first (make)" >&2; exit 1; }
+test -x ./diktat || { echo "build ./diktat first (make)" >&2; exit 1; }
 
 rm -rf "$STAGE"
 mkdir -p \
@@ -21,37 +21,37 @@ mkdir -p \
     "$STAGE/usr/lib/systemd/user" \
     "$STAGE/usr/lib/udev/rules.d" \
     "$STAGE/usr/share/applications" \
-    "$STAGE/usr/share/geist-dictate" \
-    "$STAGE/usr/share/doc/geist-dictate"
+    "$STAGE/usr/share/geist-diktat" \
+    "$STAGE/usr/share/doc/geist-diktat"
 
-install -m755 dictate "$STAGE/usr/bin/dictate"
-strip "$STAGE/usr/bin/dictate"
-install -m755 packaging/geist-dictate "$STAGE/usr/bin/geist-dictate"
-install -m644 packaging/geist-dictate.service "$STAGE/usr/lib/systemd/user/"
-install -m644 packaging/70-geist-dictate-uinput.rules "$STAGE/usr/lib/udev/rules.d/"
-install -m644 packaging/geist-dictate.desktop "$STAGE/usr/share/applications/"
+install -m755 diktat "$STAGE/usr/bin/diktat"
+strip "$STAGE/usr/bin/diktat"
+install -m755 packaging/geist-diktat "$STAGE/usr/bin/geist-diktat"
+install -m644 packaging/geist-diktat.service "$STAGE/usr/lib/systemd/user/"
+install -m644 packaging/70-geist-diktat-uinput.rules "$STAGE/usr/lib/udev/rules.d/"
+install -m644 packaging/geist-diktat.desktop "$STAGE/usr/share/applications/"
 # Runtime data the wrapper needs: mel constants (checked into the engine)
 # and the SHA-verifying tower fetcher.
-install -m644 geistlib/audio_test_data/mel_constants.bin "$STAGE/usr/share/geist-dictate/"
-install -m755 geistlib/tools/fetch_audio_tower.py "$STAGE/usr/share/geist-dictate/"
-install -m644 README.md "$STAGE/usr/share/doc/geist-dictate/"
+install -m644 geistlib/audio_test_data/mel_constants.bin "$STAGE/usr/share/geist-diktat/"
+install -m755 geistlib/tools/fetch_audio_tower.py "$STAGE/usr/share/geist-diktat/"
+install -m644 README.md "$STAGE/usr/share/doc/geist-diktat/"
 
 # Debian changelog (lintian: required). One generated entry — release
 # history lives in git.
-cat > /tmp/geist_dictate_changelog <<EOF
-geist-dictate ($VERSION) unstable; urgency=low
+cat > /tmp/geist_diktat_changelog <<EOF
+geist-diktat ($VERSION) unstable; urgency=low
 
-  * See https://github.com/geisten/geist-dictate/releases
+  * See https://github.com/geisten/geist-diktat/releases
 
  -- germar <g.schlegel@geisten.net>  $(date -R)
 EOF
-gzip -9n -c /tmp/geist_dictate_changelog > "$STAGE/usr/share/doc/geist-dictate/changelog.gz"
+gzip -9n -c /tmp/geist_diktat_changelog > "$STAGE/usr/share/doc/geist-diktat/changelog.gz"
 
 # Debian copyright file (lintian: required).
-cat > "$STAGE/usr/share/doc/geist-dictate/copyright" <<EOF
+cat > "$STAGE/usr/share/doc/geist-diktat/copyright" <<EOF
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: geist-dictate
-Source: https://github.com/geisten/geist-dictate
+Upstream-Name: geist-diktat
+Source: https://github.com/geisten/geist-diktat
 
 Files: *
 Copyright: 2026 geisten.net
@@ -62,7 +62,7 @@ EOF
 
 INSTALLED_SIZE=$(du -sk "$STAGE" | cut -f1)
 cat > "$STAGE/DEBIAN/control" <<EOF
-Package: geist-dictate
+Package: geist-diktat
 Version: $VERSION
 Architecture: $ARCH
 Maintainer: germar <g.schlegel@geisten.net>
@@ -71,13 +71,13 @@ Depends: libc6, libgomp1, alsa-utils, ydotool, curl, python3
 Recommends: libnotify-bin
 Section: sound
 Priority: optional
-Homepage: https://github.com/geisten/geist-dictate
+Homepage: https://github.com/geisten/geist-diktat
 Description: system-wide local dictation (Gemma 4 audio, geist engine)
  Speech-to-text into the focused window, fully offline: a streaming
  energy VAD segments utterances, Gemma 4 E2B transcribes them (measured
  4.2% WER English / 7.1% German), ydotool types the result. One static
  binary on the geist inference engine; the model (~3.7 GB) is fetched
- per-user by 'geist-dictate setup'.
+ per-user by 'geist-diktat setup'.
 EOF
 
 cat > "$STAGE/DEBIAN/postinst" <<'EOF'
@@ -86,7 +86,7 @@ set -e
 if [ "$1" = configure ]; then
     udevadm control --reload-rules 2>/dev/null || true
     udevadm trigger /dev/uinput 2>/dev/null || true
-    echo "geist-dictate: per user, run 'geist-dictate setup' (downloads ~3.7 GB),"
+    echo "geist-diktat: per user, run 'geist-diktat setup' (downloads ~3.7 GB),"
     echo "and add yourself to the 'input' group for typing: sudo usermod -aG input \$USER"
 fi
 EOF
@@ -95,10 +95,10 @@ chmod 755 "$STAGE/DEBIAN/postinst"
 cat > "$STAGE/DEBIAN/postrm" <<'EOF'
 #!/bin/sh
 set -e
-# Models under ~/.local/share/geist-dictate are user data — kept on purge.
+# Models under ~/.local/share/geist-diktat are user data — kept on purge.
 udevadm control --reload-rules 2>/dev/null || true
 EOF
 chmod 755 "$STAGE/DEBIAN/postrm"
 
-dpkg-deb --root-owner-group --build "$STAGE" "geist-dictate_${VERSION}_${ARCH}.deb"
-echo "built: geist-dictate_${VERSION}_${ARCH}.deb"
+dpkg-deb --root-owner-group --build "$STAGE" "geist-diktat_${VERSION}_${ARCH}.deb"
+echo "built: geist-diktat_${VERSION}_${ARCH}.deb"

@@ -1,6 +1,6 @@
--- geist-dictate.nvim — dictation at the cursor via job-control.
+-- geist-diktat.nvim — dictation at the cursor via job-control.
 --
--- No keystroke injection: transcript lines from the dictate pipeline are
+-- No keystroke injection: transcript lines from the diktat pipeline are
 -- put into the buffer programmatically (nvim_put), so vim's modal editing
 -- is never confused by dictated text.
 
@@ -9,9 +9,9 @@ local M = {}
 local defaults = {
     -- Full pipeline command. nil = built from binary/model/rms below.
     cmd = nil,
-    binary = "dictate",
+    binary = "diktat",
     model = (os.getenv("XDG_DATA_HOME") or (os.getenv("HOME") .. "/.local/share"))
-        .. "/geist-dictate/gemma4-e2b-Q4_K_M.gguf",
+        .. "/geist-diktat/gemma4-e2b-Q4_K_M.gguf",
     rms = 300,
     -- Inserted after each utterance (dictated text flows like typing).
     suffix = " ",
@@ -53,7 +53,7 @@ end
 
 function M.start()
     if job then
-        vim.notify("geist-dictate: already listening", vim.log.levels.INFO)
+        vim.notify("geist-diktat: already listening", vim.log.levels.INFO)
         return
     end
     job = vim.fn.jobstart({ "sh", "-c", pipeline_cmd() }, {
@@ -68,21 +68,21 @@ function M.start()
         end,
         on_exit = function(_, code, _)
             job = nil
-            vim.g.geist_dictate_active = false
+            vim.g.geist_diktat_active = false
             if code ~= 0 then
                 vim.schedule(function()
-                    vim.notify("geist-dictate: pipeline exited (" .. code .. ")", vim.log.levels.WARN)
+                    vim.notify("geist-diktat: pipeline exited (" .. code .. ")", vim.log.levels.WARN)
                 end)
             end
         end,
     })
     if job <= 0 then
         job = nil
-        vim.notify("geist-dictate: failed to start pipeline", vim.log.levels.ERROR)
+        vim.notify("geist-diktat: failed to start pipeline", vim.log.levels.ERROR)
         return
     end
-    vim.g.geist_dictate_active = true
-    vim.notify("geist-dictate: listening", vim.log.levels.INFO)
+    vim.g.geist_diktat_active = true
+    vim.notify("geist-diktat: listening", vim.log.levels.INFO)
 end
 
 function M.stop()
@@ -91,8 +91,8 @@ function M.stop()
     end
     vim.fn.jobstop(job) -- kills the process group: arecord goes down with it
     job = nil
-    vim.g.geist_dictate_active = false
-    vim.notify("geist-dictate: stopped", vim.log.levels.INFO)
+    vim.g.geist_diktat_active = false
+    vim.notify("geist-diktat: stopped", vim.log.levels.INFO)
 end
 
 function M.toggle()
