@@ -1,0 +1,43 @@
+*geist-dictate.txt*    Dictation at the cursor via the geist engine
+
+==============================================================================
+INTRODUCTION                                                   *geist-dictate*
+
+geist-dictate.nvim toggles local speech-to-text: a dictate pipeline
+(arecord | dictate) runs as a background job; each spoken utterance
+arrives as one line and is put into the buffer at the cursor with
+|nvim_put()| — programmatic insertion, so modal editing is never confused
+by dictated text (unlike keyboard-injection tools).
+
+Requires the dictate binary and the model (see the repo README, or the
+.deb: `geist-dictate setup`).
+
+==============================================================================
+COMMANDS                                                             *:Dictate*
+
+:Dictate                Toggle dictation. The status is exposed as
+                        `vim.g.geist_dictate_active` for statuslines.
+
+==============================================================================
+SETUP                                                    *geist-dictate-setup*
+
+No setup call is required for the defaults. To override: >lua
+
+    require("geist-dictate").setup({
+        binary = "dictate",     -- path to the dictate binary
+        model  = "~/.local/share/geist-dictate/gemma4-e2b-Q4_K_M.gguf",
+        rms    = 300,           -- VAD threshold (mic/room dependent)
+        suffix = " ",           -- appended after each utterance
+        cmd    = nil,           -- full pipeline override (testing/advanced)
+    })
+<
+Install with lazy.nvim: >lua
+
+    { "geisten/geist-dictate" }
+<
+The plugin lives at the repo root (lua/, plugin/, doc/) — plugin managers
+need no subdirectory support.
+
+Health check: `:checkhealth geist-dictate`
+
+vim:tw=78:ts=8:noet:ft=help:norl:

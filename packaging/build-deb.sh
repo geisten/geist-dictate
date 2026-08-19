@@ -25,6 +25,7 @@ mkdir -p \
     "$STAGE/usr/share/doc/geist-dictate"
 
 install -m755 dictate "$STAGE/usr/bin/dictate"
+strip "$STAGE/usr/bin/dictate"
 install -m755 packaging/geist-dictate "$STAGE/usr/bin/geist-dictate"
 install -m644 packaging/geist-dictate.service "$STAGE/usr/lib/systemd/user/"
 install -m644 packaging/70-geist-dictate-uinput.rules "$STAGE/usr/lib/udev/rules.d/"
@@ -34,6 +35,17 @@ install -m644 packaging/geist-dictate.desktop "$STAGE/usr/share/applications/"
 install -m644 geistlib/audio_test_data/mel_constants.bin "$STAGE/usr/share/geist-dictate/"
 install -m755 geistlib/tools/fetch_audio_tower.py "$STAGE/usr/share/geist-dictate/"
 install -m644 README.md "$STAGE/usr/share/doc/geist-dictate/"
+
+# Debian changelog (lintian: required). One generated entry — release
+# history lives in git.
+cat > /tmp/geist_dictate_changelog <<EOF
+geist-dictate ($VERSION) unstable; urgency=low
+
+  * See https://github.com/geisten/geist-dictate/releases
+
+ -- germar <g.schlegel@geisten.net>  $(date -R)
+EOF
+gzip -9n -c /tmp/geist_dictate_changelog > "$STAGE/usr/share/doc/geist-dictate/changelog.gz"
 
 # Debian copyright file (lintian: required).
 cat > "$STAGE/usr/share/doc/geist-dictate/copyright" <<EOF
