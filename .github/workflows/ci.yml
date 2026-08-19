@@ -28,3 +28,30 @@ jobs:
         run: make CC=gcc-14 TARGET=linux
       - name: smoke test (fixture-gated half skips without the 3.7 GB model)
         run: make CC=gcc-14 TARGET=linux test
+
+  deb:
+    strategy:
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: deps
+        run: sudo apt-get update -q && sudo apt-get install -y -q gcc-14 lintian
+      - name: build (GEMM native — the .deb carries no BLAS dependency)
+        run: make CC=gcc-14 TARGET=linux GEMM_PROVIDER=native
+      - name: package
+        run: sh packaging/build-deb.sh
+      - name: lintian (errors fail; style warnings tolerated)
+        run: lintian --fail-on error geist-dictate_*.deb
+      - name: install sanity
+        run: |
+          sudo apt-get install -y -q ./geist-dictate_*.deb
+          geist-dictate 2>&1 | grep -q usage
+          dictate /nonexistent.gguf </dev/null 2>&1 | grep -q "model_load failed"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: geist-dictate-deb-${{ matrix.runner }}
+          path: geist-dictate_*.deb

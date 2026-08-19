@@ -15,7 +15,19 @@ arecord -f S16_LE -r 16000 -c 1 -t raw | ./dictate model.gguf | wtype -   # wlro
 arecord ... | ./dictate model.gguf | while IFS= read -r l; do ydotool type -- "$l "; done  # GNOME
 ```
 
-## Build & run
+## Install (Ubuntu, .deb)
+
+```sh
+sudo apt install ./geist-dictate_<version>_<arch>.deb   # CI artifact / release
+geist-dictate setup                # per-user model download (~3.7 GB, SHA-pinned)
+sudo usermod -aG input $USER       # once, for ydotool typing; then re-login
+```
+
+Bind `geist-dictate toggle` to a keyboard shortcut (GNOME Settings →
+Keyboard → Custom Shortcuts) — press it, speak, press it again. The
+transcript is typed into whatever window has focus.
+
+## Build from source
 
 ```sh
 git clone --recurse-submodules https://github.com/geisten/geist-dictate
@@ -23,6 +35,7 @@ cd geist-dictate
 make                    # builds dictate against the pinned geistlib
 make setup              # model (~3.1 GB) + audio tower (~590 MB), SHA-pinned
 bin/geist-dictate run   # mic → transcript lines on stdout
+sh packaging/build-deb.sh   # roll your own .deb (Linux)
 ```
 
 Needs ~4 GB RAM (Gemma 4 E2B Q4_K_M); runs on any x86-64 desktop and on
