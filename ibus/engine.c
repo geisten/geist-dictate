@@ -240,6 +240,17 @@ static gboolean on_sigterm(gpointer data) {
     return G_SOURCE_REMOVE;
 }
 
+/* Bus gone (session shutdown): same cleanup — a bare ibus_quit would
+ * leak the pipeline process group. */
+static void on_disconnected(IBusBus *bus, gpointer data) {
+    (void) bus;
+    (void) data;
+    if (g_active_engine != NULL) {
+        pipeline_stop(g_active_engine);
+    }
+    ibus_quit();
+}
+
 int main(int argc, char **argv) {
     const gboolean from_daemon = argc > 1 && strcmp(argv[1], "--ibus") == 0;
 
@@ -249,7 +260,7 @@ int main(int argc, char **argv) {
         g_printerr("geist-diktat: cannot connect to the ibus daemon\n");
         return 1;
     }
-    g_signal_connect(bus, "disconnected", G_CALLBACK(ibus_quit), NULL);
+    g_signal_connect(bus, "disconnected", G_CALLBACK(on_disconnected), NULL);
 
     IBusFactory *factory = ibus_factory_new(ibus_bus_get_connection(bus));
     ibus_factory_add_engine(factory, ENGINE_NAME, GEIST_TYPE_ENGINE);
