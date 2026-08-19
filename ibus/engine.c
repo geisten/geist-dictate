@@ -36,8 +36,20 @@
 
 /* ---- engine type ------------------------------------------------------ */
 
-#define GEIST_TYPE_ENGINE geist_engine_get_type()
-G_DECLARE_FINAL_TYPE(GeistEngine, geist_engine, GEIST, ENGINE, IBusEngine)
+/* Classic GObject boilerplate — G_DECLARE_FINAL_TYPE needs autoptr
+ * support on the parent type, which libibus does not define for
+ * IBusEngine. */
+typedef struct _GeistEngine GeistEngine;
+typedef struct _GeistEngineClass GeistEngineClass;
+
+#define GEIST_TYPE_ENGINE (geist_engine_get_type())
+#define GEIST_ENGINE(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), GEIST_TYPE_ENGINE, GeistEngine))
+
+GType geist_engine_get_type(void);
+
+struct _GeistEngineClass {
+    IBusEngineClass parent;
+};
 
 struct _GeistEngine {
     IBusEngine parent;
