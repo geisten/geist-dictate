@@ -14,6 +14,8 @@ jobs:
   build-test:
     strategy:
       matrix:
+        # -std=c23 needs gcc >= 14; force the generic linux target — the
+        # GitHub arm runners otherwise auto-detect as pi5 (cortex-a76).
         runner: [ubuntu-24.04, ubuntu-24.04-arm]
     runs-on: ${{ matrix.runner }}
     steps:
@@ -21,8 +23,8 @@ jobs:
         with:
           submodules: true
       - name: deps
-        run: sudo apt-get update -q && sudo apt-get install -y -q libopenblas-dev
+        run: sudo apt-get update -q && sudo apt-get install -y -q libopenblas-dev gcc-14
       - name: build
-        run: make
+        run: make CC=gcc-14 TARGET=linux
       - name: smoke test (fixture-gated half skips without the 3.7 GB model)
-        run: make test
+        run: make CC=gcc-14 TARGET=linux test
