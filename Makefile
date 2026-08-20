@@ -42,8 +42,13 @@ ibus-engine-geist-diktat: ibus/engine.c
 ibus-test-client: ibus/test_client.c
 	$(CC) -std=c23 -O2 -Wall -Wextra $(IBUS_CFLAGS) -o $@ $< $(IBUS_LIBS)
 
-$(LIB):
+# Always delegate: the submodule's own make is incremental and cheap,
+# and a plain file target went stale on submodule bumps (the lib exists
+# but is outdated — measured: a deaf binary after the #277 pin bump).
+$(LIB): FORCE
 	$(MAKE) -C $(GEISTLIB) lib TARGET=$(TARGET) MODE=$(MODE)
+
+FORCE:
 
 # Model + tower land inside the submodule (gguf_artifacts/, audio_bench/)
 # where the engine's default search paths find them. Idempotent: both are
