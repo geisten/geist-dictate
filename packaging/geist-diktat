@@ -21,7 +21,7 @@ MEL="$PREFIX/share/geist-diktat/mel_constants.bin"
 UNIT=geist-diktat.service
 
 MODEL_URL="https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/main/gemma-4-E2B-it-Q4_K_M.gguf"
-MODEL_SHA=9378bc471710229ef165709b62e34bfb62231420ddaf6d729e727305b5b8672d
+MODEL_SHA=740185b21d22ceb83a11c3aa62ad5842ef32c70f6096d756bbee85a1e4ec34b8
 TOWER_SHA=d6c45a6c276212dc3a793e66dfc588d89c12d1ac92c0e4b85494390ca848cd77
 
 export GEIST_AUDIO_MODEL_PATH="${GEIST_AUDIO_MODEL_PATH:-$TOWER}"

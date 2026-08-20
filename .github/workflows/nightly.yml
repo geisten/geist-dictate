@@ -26,7 +26,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.local/share/geist-diktat
-          key: geist-diktat-model-9378bc47-d6c45a6c
+          key: geist-diktat-model-740185b2-d6c45a6c
       - name: fetch model + tower (cache miss only)
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -34,7 +34,7 @@ jobs:
           mkdir -p "$DATA"
           curl -fL --retry 3 -C - -o "$DATA/gemma4-e2b-Q4_K_M.gguf" \
             "https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF/resolve/main/gemma-4-E2B-it-Q4_K_M.gguf"
-          echo "9378bc471710229ef165709b62e34bfb62231420ddaf6d729e727305b5b8672d  $DATA/gemma4-e2b-Q4_K_M.gguf" | sha256sum -c -
+          echo "740185b21d22ceb83a11c3aa62ad5842ef32c70f6096d756bbee85a1e4ec34b8  $DATA/gemma4-e2b-Q4_K_M.gguf" | sha256sum -c -
           python3 geistlib/tools/fetch_audio_tower.py -o "$DATA/audio_tower.safetensors" \
             --sha256 d6c45a6c276212dc3a793e66dfc588d89c12d1ac92c0e4b85494390ca848cd77
       - name: build
