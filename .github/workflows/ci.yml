@@ -51,6 +51,25 @@ jobs:
       - name: headless integration test (daemon + engine + client)
         run: sh tests/ibus_smoke.sh
 
+  install-sh:
+    strategy:
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: syntax
+        run: sh -n install.sh
+      - name: one-liner against the latest release, clean container
+        run: |
+          docker run --rm -v "$PWD/install.sh:/install.sh:ro" ubuntu:24.04 bash -ec '
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -q >/dev/null && apt-get install -y -q curl ca-certificates >/dev/null
+            sh /install.sh
+            geist-diktat 2>&1 | grep -q usage
+            echo "install.sh ok"
+          '
+
   deb:
     strategy:
       matrix:
@@ -68,11 +87,21 @@ jobs:
         run: sh packaging/build-deb.sh
       - name: lintian (errors fail; style warnings tolerated)
         run: lintian --fail-on error geist-diktat_*.deb
-      - name: install sanity
+      - name: install test in a clean container (catches missing Depends)
         run: |
-          sudo apt-get install -y -q ./geist-diktat_*.deb
-          geist-diktat 2>&1 | grep -q usage
-          diktat /nonexistent.gguf </dev/null 2>&1 | grep -q "model_load failed"
+          docker run --rm -v "$PWD:/w" -w /w ubuntu:24.04 bash -ec '
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -q >/dev/null
+            apt-get install -y -q ./geist-diktat_*.deb >/dev/null
+            geist-diktat 2>&1 | grep -q usage
+            diktat /nonexistent.gguf </dev/null 2>&1 | grep -q "model_load failed"
+            ls /usr/share/ibus/component/geist-diktat.xml /usr/libexec/ibus-engine-geist-diktat >/dev/null
+            # runtime deps must arrive via Depends — a fresh container has none preinstalled
+            command -v ydotool >/dev/null || { echo "FAIL: ydotool not pulled in"; exit 1; }
+            command -v arecord >/dev/null || { echo "FAIL: alsa-utils not pulled in"; exit 1; }
+            command -v curl >/dev/null || { echo "FAIL: curl not pulled in"; exit 1; }
+            echo "container install ok"
+          '
       - uses: actions/upload-artifact@v4
         with:
           name: geist-diktat-deb-${{ matrix.runner }}

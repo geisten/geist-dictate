@@ -76,6 +76,9 @@ jobs:
           for a in amd64 arm64; do
             cp geist-diktat_*_"$a".deb "geist-diktat_$a.deb"
           done
+          for m in x86_64 aarch64; do
+            cp geist-diktat_*_linux-"$m".tar.gz "geist-diktat_linux-$m.tar.gz"
+          done
       - name: create release with all artifacts
         env:
           GH_TOKEN: ${{ github.token }}
@@ -84,4 +87,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --title "$GITHUB_REF_NAME" \
             --generate-notes \
-            geist-diktat_*.deb geist-diktat_*_linux-*.tar.gz
+            geist-diktat_*.deb geist-diktat_*linux-*.tar.gz
