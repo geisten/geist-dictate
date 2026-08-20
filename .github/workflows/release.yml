@@ -71,6 +71,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           merge-multiple: true
+      - name: stable-name aliases (README links releases/latest/download/geist-diktat_<arch>.deb)
+        run: |
+          for a in amd64 arm64; do
+            cp geist-diktat_*_"$a".deb "geist-diktat_$a.deb"
+          done
       - name: create release with all artifacts
         env:
           GH_TOKEN: ${{ github.token }}
