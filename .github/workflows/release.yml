@@ -1,0 +1,82 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "version to package (without v), e.g. 0.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  artifacts:
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: version from tag
+        id: v
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: deps
+        run: sudo apt-get update -q && sudo apt-get install -y -q gcc-14 lintian libibus-1.0-dev
+      - name: build
+        run: |
+          make CC=gcc-14 TARGET=linux GEMM_PROVIDER=native
+          make CC=gcc-14 GEMM_PROVIDER=native ibus-engine-geist-diktat
+      - name: package
+        run: |
+          VERSION=${{ steps.v.outputs.version }} sh packaging/build-deb.sh
+          VERSION=${{ steps.v.outputs.version }} sh packaging/build-tarball.sh
+      - name: lintian
+        run: lintian --fail-on error geist-diktat_*.deb
+      - name: install sanity against the release artifact
+        run: |
+          sudo apt-get install -y -q ./geist-diktat_*.deb
+          geist-diktat 2>&1 | grep -q usage
+          diktat /nonexistent.gguf </dev/null 2>&1 | grep -q "model_load failed"
+          ls /usr/share/ibus/component/geist-diktat.xml /usr/libexec/ibus-engine-geist-diktat
+      - name: tarball sanity (wrapper resolves its unpacked prefix)
+        run: |
+          mkdir -p /tmp/tb && tar -C /tmp/tb -xzf geist-diktat_*_linux-*.tar.gz
+          /tmp/tb/geist-diktat_*/bin/geist-diktat 2>&1 | grep -q usage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.arch }}
+          path: |
+            geist-diktat_*.deb
+            geist-diktat_*_linux-*.tar.gz
+
+  publish:
+    needs: artifacts
+    runs-on: ubuntu-24.04
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - name: create release with all artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            geist-diktat_*.deb geist-diktat_*_linux-*.tar.gz

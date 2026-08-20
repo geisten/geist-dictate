@@ -18,15 +18,10 @@ arecord ... | ./diktat model.gguf | while IFS= read -r l; do ydotool type -- "$l
 ## Install (Ubuntu, .deb)
 
 ```sh
-# amd64; use _arm64.deb on ARM (Pi 5, ARM servers)
-curl -fLO https://github.com/geisten/geist-diktat/releases/latest/download/geist-diktat_amd64.deb
-sudo apt install ./geist-diktat_amd64.deb
-geist-diktat setup                 # per-user model download (~3.7 GB, SHA-pinned)
+sudo apt install ./geist-diktat_<version>_<arch>.deb   # CI artifact / release
+geist-diktat setup                # per-user model download (~3.7 GB, SHA-pinned)
 sudo usermod -aG input $USER       # once, for ydotool typing; then re-login
 ```
-
-Non-Debian distros: grab the `linux-{x86_64,aarch64}.tar.gz` from the
-same release — unpack anywhere, `bin/geist-diktat` works in place.
 
 Two ways to dictate, pick one:
 
