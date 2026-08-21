@@ -87,9 +87,11 @@ jobs:
         run: sh packaging/build-deb.sh
       - name: lintian (errors fail; style warnings tolerated)
         run: lintian --fail-on error geist-diktat_*.deb
-      - name: install test in a clean container (catches missing Depends)
+      - name: install test in clean containers (catches missing Depends; bookworm = RasPiOS glibc)
         run: |
-          docker run --rm -v "$PWD:/w" -w /w ubuntu:24.04 bash -ec '
+          for IMG in ubuntu:24.04 debian:12; do
+          echo "=== $IMG ==="
+          docker run --rm -v "$PWD:/w" -w /w "$IMG" bash -ec '
             export DEBIAN_FRONTEND=noninteractive
             apt-get update -q >/dev/null
             apt-get install -y -q ./geist-diktat_*.deb >/dev/null
@@ -102,6 +104,7 @@ jobs:
             command -v curl >/dev/null || { echo "FAIL: curl not pulled in"; exit 1; }
             echo "container install ok"
           '
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: geist-diktat-deb-${{ matrix.runner }}

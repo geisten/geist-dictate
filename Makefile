@@ -23,6 +23,15 @@ CFLAGS  := -std=c23 -O2 -Wall -Wextra -I$(GEISTLIB)/include $(CFLAGS_TARGET) $(G
 LDFLAGS := $(LDFLAGS_TARGET)
 LDLIBS  := $(LDLIBS_TARGET) $(GEMM_LDLIBS)
 
+# glibc's vector math lib (pulled in by -ffast-math auto-vectorization)
+# only exists as a shared object since glibc 2.38 on arm64 — Debian/
+# RasPiOS bookworm (2.36) lacks it and the binary refuses to start
+# (measured on the Pi 5). Linking it statically keeps one binary
+# working across bookworm and newer; libm/libc stay dynamic.
+ifeq ($(TARGET),linux)
+LDLIBS += -l:libmvec.a
+endif
+
 .PHONY: all setup test ibus clean
 
 all: diktat
