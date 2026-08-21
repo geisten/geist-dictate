@@ -81,22 +81,35 @@ jobs:
           submodules: true
       - name: deps
         run: sudo apt-get update -q && sudo apt-get install -y -q lintian
-      - name: build in debian:12 (glibc 2.36 floor — RasPiOS bookworm compatibility)
+      # arm64 builds in debian:12 with clang-19: the Pi world runs RasPiOS
+      # bookworm (glibc 2.36); ubuntu-24.04 binaries link libmvec +
+      # GLIBC_2.38+ symbols and die there (measured on a Pi 5). amd64
+      # stays on the runner's gcc-14 (clang-19 backend-crashes on the
+      # x86 VNNI kernels; x86 desktops run ubuntu 24.04+ / debian 13+).
+      - name: build (arm64 -> debian:12 + clang-19; amd64 -> gcc-14)
         run: |
-          docker run --rm -v "$PWD:/w" -w /w debian:12 bash -ec '
-            export DEBIAN_FRONTEND=noninteractive
-            apt-get update -q >/dev/null
-            apt-get install -y -q clang-19 libomp-19-dev libibus-1.0-dev make pkg-config >/dev/null
-            make CC=clang-19 TARGET=linux GEMM_PROVIDER=native
-            make CC=clang-19 GEMM_PROVIDER=native ibus-engine-geist-diktat
-          '
+          if [ "$(uname -m)" = aarch64 ]; then
+            docker run --rm -v "$PWD:/w" -w /w debian:12 bash -ec '
+              export DEBIAN_FRONTEND=noninteractive
+              apt-get update -q >/dev/null
+              apt-get install -y -q clang-19 libomp-19-dev libibus-1.0-dev make pkg-config >/dev/null
+              make CC=clang-19 TARGET=linux GEMM_PROVIDER=native
+              make CC=clang-19 GEMM_PROVIDER=native ibus-engine-geist-diktat
+            '
+          else
+            sudo apt-get install -y -q gcc-14 libibus-1.0-dev
+            make CC=gcc-14 TARGET=linux GEMM_PROVIDER=native
+            make CC=gcc-14 GEMM_PROVIDER=native ibus-engine-geist-diktat
+          fi
       - name: package
         run: sh packaging/build-deb.sh
       - name: lintian (errors fail; style warnings tolerated)
         run: lintian --fail-on error geist-diktat_*.deb
       - name: install test in clean containers (catches missing Depends; bookworm = RasPiOS glibc)
         run: |
-          for IMG in ubuntu:24.04 debian:12; do
+          IMAGES="ubuntu:24.04"
+          [ "$(uname -m)" = aarch64 ] && IMAGES="$IMAGES debian:12"
+          for IMG in $IMAGES; do
           echo "=== $IMG ==="
           docker run --rm -v "$PWD:/w" -w /w "$IMG" bash -ec '
             export DEBIAN_FRONTEND=noninteractive

@@ -66,6 +66,13 @@ License: Apache-2.0
  in /usr/share/common-licenses/Apache-2.0.
 EOF
 
+# OpenMP runtime follows the compiler that built the binary.
+if ldd diktat | grep -q libomp; then
+    OMP_DEP="libomp5-19 | libomp5"
+else
+    OMP_DEP="libgomp1"
+fi
+
 INSTALLED_SIZE=$(du -sk "$STAGE" | cut -f1)
 cat > "$STAGE/DEBIAN/control" <<EOF
 Package: geist-diktat
@@ -73,7 +80,7 @@ Version: $VERSION
 Architecture: $ARCH
 Maintainer: germar <g.schlegel@geisten.net>
 Installed-Size: $INSTALLED_SIZE
-Depends: libc6, libomp5-19 | libomp5, alsa-utils, ydotool, curl, python3, libibus-1.0-5
+Depends: libc6, $OMP_DEP, alsa-utils, ydotool, curl, python3, libibus-1.0-5
 Recommends: libnotify-bin, ibus
 Section: sound
 Priority: optional
