@@ -73,7 +73,7 @@ Version: $VERSION
 Architecture: $ARCH
 Maintainer: germar <g.schlegel@geisten.net>
 Installed-Size: $INSTALLED_SIZE
-Depends: libc6, libgomp1, alsa-utils, ydotool, curl, python3, libibus-1.0-5
+Depends: libc6, libomp5-19 | libomp5, alsa-utils, ydotool, curl, python3, libibus-1.0-5
 Recommends: libnotify-bin, ibus
 Section: sound
 Priority: optional

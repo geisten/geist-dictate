@@ -80,9 +80,16 @@ jobs:
         with:
           submodules: true
       - name: deps
-        run: sudo apt-get update -q && sudo apt-get install -y -q gcc-14 lintian libibus-1.0-dev
-      - name: build (GEMM native — the .deb carries no BLAS dependency)
-        run: make CC=gcc-14 TARGET=linux GEMM_PROVIDER=native && make CC=gcc-14 GEMM_PROVIDER=native ibus-engine-geist-diktat
+        run: sudo apt-get update -q && sudo apt-get install -y -q lintian
+      - name: build in debian:12 (glibc 2.36 floor — RasPiOS bookworm compatibility)
+        run: |
+          docker run --rm -v "$PWD:/w" -w /w debian:12 bash -ec '
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -q >/dev/null
+            apt-get install -y -q clang-19 libomp-19-dev libibus-1.0-dev make pkg-config >/dev/null
+            make CC=clang-19 TARGET=linux GEMM_PROVIDER=native
+            make CC=clang-19 GEMM_PROVIDER=native ibus-engine-geist-diktat
+          '
       - name: package
         run: sh packaging/build-deb.sh
       - name: lintian (errors fail; style warnings tolerated)
